@@ -75,9 +75,19 @@ class UNetConvBlock(nn.Module):
         super().__init__()
         # vvvvvvvvv
         # CODE HERE
-        self.block1 = None
-        self.block2 = None
-        self.block3 = None
+        self.block1 = nn.Sequential(
+            nn.Conv2d(in_channels=cin, out_channels=cout, kernel_size=3, stride=1, padding=1,), # Padding and stride to 1 for handle the image's borders.
+            nn.ReLU(inplace=True),
+            nn.BatchNorm2d(cout),
+        )
+
+        self.block2 = nn.Sequential(
+            nn.Conv2d(in_channels=cin, out_channels=cout, kernel_size=3, stride=1, padding=1,), # Padding and stride to 1 for handle the image's borders.
+            nn.ReLU(inplace=True),
+            nn.BatchNorm2d(cout),
+        )
+
+        self.block3 = nn.MaxPool2d(kernel_size=2, stride=2, padding=0) # Stride to 2 for reduce output dimension
         # ^^^^^^^^^
 
     def forward(self, inputs):
