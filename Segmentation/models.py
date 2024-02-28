@@ -73,8 +73,7 @@ def fcn_resnet50(input_size, num_classes):
 class UNetConvBlock(nn.Module):
     def __init__(self, cin, cout):
         super().__init__()
-        # vvvvvvvvv
-        # CODE HERE
+
         self.block1 = nn.Sequential(
             nn.Conv2d(in_channels=cin, out_channels=cout, kernel_size=3, stride=1, padding=1,), # Padding and stride to 1 for handle the image's borders.
             nn.ReLU(inplace=True),
@@ -88,14 +87,13 @@ class UNetConvBlock(nn.Module):
         )
 
         self.block3 = nn.MaxPool2d(kernel_size=2, stride=2, padding=0) # Stride to 2 for reduce output dimension
-        # ^^^^^^^^^
 
     def forward(self, inputs):
-        # vvvvvvvvv
-        # CODE HERE
-        features = None
-        outputs = None
-        # ^^^^^^^^^
+        # Tensor propagated into the network
+        features = self.block2(self.block1(inputs))
+        # Tensor transmitted to the decoder
+        outputs = self.block3(features)
+
         return outputs, features
 
 
@@ -117,10 +115,11 @@ class UNetEncoder(nn.Module):
 
         # Add the last encoding layer
         # which outputs 32 * 2*num_blocks channels
-        # vvvvvvvvv
-        # CODE HERE
-        self.last_block = None
-        # ^^^^^^^^^
+        self.last_block = self.last_block = nn.Sequential(
+            nn.Conv2d(cin, self.cout, kernel_size=3, stride=1, padding=1),
+            nn.ReLU(inplace=True),
+            nn.BatchNorm2d(self.cout),
+        )
 
     def forward(self, inputs):
         # While iterating through the stages of the encoder
@@ -144,29 +143,43 @@ class UNetEncoder(nn.Module):
 class UNetUpConvBlock(nn.Module):
     def __init__(self, cin, cout):
         super().__init__()
-        # vvvvvvvvv
-        # CODE HERE
-        self.upconv = None
-        self.convblock = None
-        # ^^^^^^^^^
+
+        self.upconv = nn.Sequential(
+            nn.Upsample(scale_factor=2),
+            nn.Conv2d(int(cin/2), int(cin/2), kernel_size=3, stride=1, padding=1),
+            nn.ReLU(inplace=True),
+            nn.BatchNorm2d( int(cin/2) ),
+        )
+
+        self.convblock = self.last_block = nn.Sequential(
+            nn.Conv2d(cin, cout, kernel_size=3, stride=1, padding=1),
+            nn.ReLU(inplace=True),
+            nn.BatchNorm2d(cout),
+            # Cout in input because it's the output of the previous convolution
+            nn.Conv2d(cout, cout, kernel_size=3, stride=1, padding=1),
+            nn.ReLU(inplace=True),
+            nn.BatchNorm2d(cout),
+        )
 
     def forward(self, inputs, encoder_features):
-        # vvvvvvvvv
-        # CODE HERE
-        upconv_features = None
-        concat_features = None
-        outputs = None
-        # ^^^^^^^^^
+        # With B, C, H, W
+        upconv_features = self.upconv(inputs)
+        # concatenate inter_features and encoder_features
+        concat_features = torch.cat((encoder_features, upconv_features), dim=1)
+        outputs = self.convblock(concat_features)
+
         return outputs
 
 
 class UNetDecoder(nn.Module):
     def __init__(self, cin, num_blocks, num_classes):
         super().__init__()
-        # vvvvvvvvv
-        # CODE HERE
-        self.first_block = None
-        # ^^^^^^^^^
+
+        self.first_block = nn.Sequential(
+            nn.Conv2d(cin, cin, kernel_size=3, stride=1, padding=1),
+            nn.ReLU(inplace=True),
+            nn.BatchNorm2d(cin),
+        )
 
         # Note: use ModuleList to correctly register
         #       the modules it contains rather than plain list
@@ -182,10 +195,7 @@ class UNetDecoder(nn.Module):
             cout = cout // 2
 
         # Add the last encoding layer
-        # vvvvvvvvv
-        # CODE HERE
-        self.last_conv = None
-        # ^^^^^^^^^
+        self.last_conv = nn.Conv2d(cin, num_classes, kernel_size=1, stride=1, padding=0) # num_classes because we want a segmentation of the image
 
     def forward(self, encoder_outputs, encoder_features):
         outputs = self.first_block(encoder_outputs)
