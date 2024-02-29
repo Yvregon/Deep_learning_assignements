@@ -131,7 +131,7 @@ def train(args):
     # Make the loss
     # We ignore the pixels which are labeled as <UNK>
     loss = wrap_dtype(metrics.build_loss(args.loss))
-
+c
     # Make the optimizer
     optimizer = torch.optim.Adam(
         model.parameters(), lr=args.base_lr, weight_decay=args.weight_decay
