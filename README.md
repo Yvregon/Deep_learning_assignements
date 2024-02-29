@@ -34,5 +34,6 @@ cd Intro
 
 Pour lancer le TP2.b : 
 ```bash
-./TP2.sh
+cd Segmentation
+python3 main.py
 ```
