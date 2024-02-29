@@ -318,11 +318,15 @@ def test_dataset(args):
 
     to_tensor = transforms.ToTensor()
     data_transforms = lambda inp, targ: (to_tensor(inp), targ)
-    #Code Here
-    #vvvvvvvvv
-    dataset = ...
-    rgb, semantics = ...
-    #^^^^^^^^^
+
+    dataset = StanfordDataset(
+        args.datadir,
+        transforms=data_transforms,
+        areas=args.areas,
+    )
+    data_idx = random.randint(0, len(dataset) - 1)
+
+    rgb, semantics = dataset[data_idx]
 
     fig, axes = plt.subplots(1, 3, figsize=(6, 3))
     ax = axes[0]
@@ -339,6 +343,7 @@ def test_dataset(args):
 
     plt.tight_layout()
     plt.show()
+    plt.savefig("test_fig")
 
 
 def test_augmented_dataset(args):
@@ -377,7 +382,10 @@ def test_augmented_dataset(args):
     def data_transforms(img, mask):
         tf = A.Compose(
             [
-                #A.Sharpen(),
+                # First we resize our samples (with some random crop)
+                A.RandomCrop(768, 768),
+                A.Resize(256, 256),
+
                 A.RandomBrightnessContrast(p=0.25),
                 A.Superpixels(p_replace=0.1, always_apply=True, n_segments=100),
                 A.Normalize(0, 1),
@@ -426,7 +434,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("--datadir", type=pathlib.Path, required=True)http://localhost:8080	
+    parser.add_argument("--datadir", type=pathlib.Path, required=True)
     parser.add_argument(
         "--areas",
         nargs="+",
@@ -436,5 +444,5 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    # test_dataset(args)
+    test_dataset(args)
     test_augmented_dataset(args)

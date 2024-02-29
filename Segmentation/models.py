@@ -81,7 +81,7 @@ class UNetConvBlock(nn.Module):
         )
 
         self.block2 = nn.Sequential(
-            nn.Conv2d(in_channels=cin, out_channels=cout, kernel_size=3, stride=1, padding=1,), # Padding and stride to 1 for handle the image's borders.
+            nn.Conv2d(in_channels=cout, out_channels=cout, kernel_size=3, stride=1, padding=1,), # Padding and stride to 1 for handle the image's borders.
             nn.ReLU(inplace=True),
             nn.BatchNorm2d(cout),
         )
@@ -146,7 +146,7 @@ class UNetUpConvBlock(nn.Module):
 
         self.upconv = nn.Sequential(
             nn.Upsample(scale_factor=2),
-            nn.Conv2d(int(cin/2), int(cin/2), kernel_size=3, stride=1, padding=1),
+            nn.Conv2d(cin, int(cin/2), kernel_size=3, stride=1, padding=1),
             nn.ReLU(inplace=True),
             nn.BatchNorm2d( int(cin/2) ),
         )
@@ -230,11 +230,11 @@ def build_model(model_name, num_classes):
 
 
 def main():
-    m = build_model("UNet", (256, 256), 14)
-    # vvvvvvvvv
-    # CODE HERE
-    pass
-    # ^^^^^^^^^
+
+    mname = ["UNet"]
+    for n in mname:
+        m = build_model(n, 10)
+        print(deepcs.display.torch_summarize(m, (2, 3, 256, 256)))
 
 
 if __name__ == "__main__":
