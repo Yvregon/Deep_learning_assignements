@@ -78,22 +78,28 @@ def train(args):
     # Set up the train and valid transforms
     img_size = (args.img_size, args.img_size)
 
-    # vvvvvvvvv
-    # CODE HERE
     train_aug = A.Compose(
         [
-            A.Normalize(mean=0.0, std=1.0),
+            # First we resize our samples (with some random crop)
+            A.RandomCrop(768, 768),
+            A.Resize(256, 256),
+
+            A.RandomBrightnessContrast(p=0.25),
+            A.Superpixels(p_replace=0.1, always_apply=True, n_segments=100),
+            A.Normalize(0, 1),
             ToTensorV2(),
         ]
     )
     valid_aug = A.Compose(
         [
+            # Only crop resizing. We can also do some linear transformation if it doesn't exceed 20° of rotation and 30% of shear
+            #(limits arbitrary set following the human perception capacity).
+            A.RandomCrop(768, 768),
+            A.Resize(*img_size),
             A.Normalize(mean=0.0, std=1.0),
             ToTensorV2(),
         ]
     )
-    # ^^^^^^^^^
-    # CODE HERE
 
     def train_transforms(img, mask):
         aug = train_aug(image=np.array(img), mask=mask.numpy())
@@ -205,7 +211,7 @@ def train(args):
         for bname, bm in test_fmetrics.items():
             bm.tensorboard_write(tensorboard_writer, f"metrics/test_{bname}", e)
         # Display the results on the console
-        macro_test_F1 = sum(test_metrics["F1"]) / len(test_metrics["F1"])
+        macro_test_F1 = sum(test_metrics["F1"]) / len(test_metrics["F1"]) # MACRO F1 COMPUTED HERE FOR TRAIN /!\
         updated = model_checkpoint.update(macro_test_F1)
         metrics_msg = f"[{e}/{args.nepochs}] Test : \n  "
         metrics_msg += "\n  ".join(
@@ -402,7 +408,7 @@ def test(args):
             args.areas_test,
         )
         test_metrics = deepcs.testing.test(model, loader, device, test_fmetrics)
-        macro_test_F1 = sum(test_metrics["F1"]) / len(test_metrics["F1"])
+        macro_test_F1 = sum(test_metrics["F1"]) / len(test_metrics["F1"]) # MACRO F1 COMPUTED HERE FOR TEST /!\
         metrics_msg = "Metrics computed on the provided data \n  "
         metrics_msg += "\n  ".join(
             f" {m_name}: {m_value}" for (m_name, m_value) in test_metrics.items()
