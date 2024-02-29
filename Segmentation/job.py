@@ -63,18 +63,14 @@ mkdir $TMPDIR/lw_deeplearning_semantic
 cd ../../
 rsync -r . $TMPDIR/lw_deeplearning_semantic/ --exclude 'logs'  --exclude 'logslurms'
 
-cd $TMPDIR/lw_deeplearning_semantic
-cd LabsSolutions/01-pytorch-segmentation
-
-ls 
+cd $TMPDIR/lw_deeplearning_semantic 
 
 git checkout {commit_id}
 
 echo ""
-echo "Conda virtual env"
+echo "Python virtual env"
 
-export PATH=/opt/conda/bin:$PATH
-source activate dl-lectures-segmentation
+source source $TMPDIR/venv/bin/activate
 
 
 echo ""
