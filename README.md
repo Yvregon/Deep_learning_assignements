@@ -4,7 +4,7 @@
 ## Contenu du Projet
 Le projet est organisé de la manière suivante : 
 
-Dans le dossier **Intro**, on trouve un classifieur d'images 28 par 28 pixels, en catégorie d'habillement, entraîné et testé sur la base *fashion_MINST*.
+Dans le dossier **Intro**, on trouve un classifieur d'images 28 par 28 pixels, en catégorie d'habillement, entraîné et testé sur la base *fashion_MNIST*.
 
 Dans le dossier **Segmentation** on trouve un réseau UNet qui fait de la segmentation d'images en 14 label différents, dont un label "unknown". Ce réseau est entrainé sur la base de données *Stanford 2D-3D S dataset*
 
